@@ -1,5 +1,6 @@
 using System;
 using Photon.Pun;
+using UnityEngine;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
 using PunPlayer = Photon.Realtime.Player;
 
@@ -11,16 +12,21 @@ public class PlayerScoreController : MonoBehaviourPunCallbacks
     {
         if (player != null)
         {
-            int oldValue = 0;
-            if ((bool)player.CustomProperties?.ContainsKey(NetworkKeys.RoomScore))
+            if (PhotonNetwork.InRoom && player.ActorNumber >= 0)
             {
-                oldValue = (int)player.CustomProperties[NetworkKeys.RoomScore];
+                int oldValue = 0;
+                if ((bool)player.CustomProperties?.ContainsKey(NetworkKeys.RoomScore))
+                {
+                    oldValue = (int)player.CustomProperties[NetworkKeys.RoomScore];
+                }
+
+                int newValue = oldValue + addScore;
+
+                player.SetCustomProperties(new Hashtable() { { NetworkKeys.RoomScore, newValue } });
             }
-
-            int newValue = oldValue + addScore;
-
-            player.SetCustomProperties(new Hashtable() { { NetworkKeys.RoomScore, newValue } });
+            else Debug.LogWarning("[Player Score] players not in room");
         }
+        else Debug.LogWarning("[Player Score] player parameter must not be null");
     }
 
     public override void OnJoinedRoom()
